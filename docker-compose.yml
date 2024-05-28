@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  web:
+    container_name: nginx
+    image: nginx:alpine3.19
+    ports:
+      - "80:80"
+  postgresql:
+    container_name: "postgresql"
+    image: postgres:9.6-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    volumes:
+      - ./data/postgresql:/var/lib/postgresql/data
+  redis:
+    container_name: redis
+    image: redis:4-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/data
+      - ./etc/redis.conf:/etc/redis.conf
+    command: redis-server /etc/redis.conf
+  caddy:
+    container_name: caddy
+    image: caddy:2.0.0-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./etc/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./data/caddy:/data
+    links:
+      - web
+    command: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+
